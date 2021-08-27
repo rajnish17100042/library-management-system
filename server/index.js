@@ -90,10 +90,14 @@ app.post('/login', (req, res) => {
         }
         // console.log(result);
         if (result.length > 0) {
+            // server side console
             console.log(result);
+            // send the data to frontend  .. result is an array of object
+            res.send(result);
         }
         else {
             console.log("wrong credentials");
+            res.send({ message: "wrong credentials" });
         }
     });
 

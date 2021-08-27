@@ -8,6 +8,8 @@ const Login = () => {
     const [password, setPassword] = useState("");
     const [role, setRole] = useState("");
 
+    const [loginStatus, setLoginStatus] = useState("");
+
     //arrow function to save the email
     let saveEmail = (event) => {
         setEmail(event.target.value);
@@ -22,6 +24,7 @@ const Login = () => {
 
     //arrow function to save the role
     let saveRole = (event) => {
+        event.preventDefault();
         setRole(event.target.value);
         // alert(role);
     };
@@ -32,12 +35,18 @@ const Login = () => {
         // alert(email); // alert(password);// alert(role);
 
         // send the data to the backend 
-        Axios.post("/login", {
+        Axios.post("http://localhost:3001/login", {
             email: email,
             password: password,
             role: role,
         }).then((response) => {
-            console.log(response)
+            // check if an error
+            if (response.data.message) {
+                setLoginStatus(response.data.message);
+            }
+            else {
+                setLoginStatus(response.data[0].email);
+            }
         }).catch(err => console.log(err));
 
     };
@@ -47,21 +56,23 @@ const Login = () => {
             <form>
                 <div className="form-group mt-5">
 
-                    <input type="email" className="form-control" id="email" name="email" onChange={saveEmail} placeholder="Enter email" required />
+                    <input type="email" className="form-control" autoComplete="off" onChange={saveEmail} placeholder="Enter email" required />
 
                 </div>
                 <div className="form-group mt-2">
 
-                    <input type="password" className="form-control" id="password" name="password" onChange={savePassword} placeholder="Password" required />
+                    <input type="password" className="form-control" autoComplete="off" onChange={savePassword} placeholder="Password" required />
                 </div>
 
-                <select className="form-select mt-2" id="role" name="role" onChange={saveRole} required>
-                    <option selected>Role</option>
+                <select className="form-select mt-2" autoComplete="off" onChange={saveRole} required>
+                    <option>Role</option>
                     <option value="student">Student</option>
                     <option value="librarian">Librarian</option>
                     <option value="admin">Admin</option>
                 </select>
-                <button type="submit" className="btn btn-primary mt-2" onClick={login}>Submit</button>
+                {/* if we put type = submit then page is auto reloaded */}
+                <button type="button" className="btn btn-primary mt-2" onClick={login}>Submit</button>
+                <h1>{loginStatus}</h1>
             </form>
         </div>
 

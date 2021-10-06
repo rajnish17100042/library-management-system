@@ -2,15 +2,20 @@ const express = require("express");
 const mysql = require('mysql');
 const app = express();
 const cors = require('cors');
-var bodyParser = require('body-parser')
-const port = process.env.PORT || 3001;
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+const port = 3001;
 
 
 
-// to parse the json object sent from the frontend
+// cross origin resource sharing  
+//header based mechanism that allows a server to indicate any origins (domain, scheme, or port) other than its own from which a browser should permit loading of resources.
+
 app.use(cors());
+
+// to recognize the incoming Request Object as a JSON Object
 app.use(express.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+
 
 // create connection
 const db = mysql.createConnection({
@@ -54,27 +59,41 @@ db.connect((err) => {
 // let role = "admin";
 // let cred = { email: email, password: password, role: role };
 
-// app.post('/register', (req, res) => {
-//     console.log('inside register');
-//     const email = req.body.email;
-//     const password = req.body.password;
-//     const role = req.body.role;
+app.post('/register', (req, res) => {
+    console.log('inside register');
+    console.log(req);
 
-//     // console.log(role, email, password);
+    const email = req.body.email;
+    const password = req.body.password;
+    const role = req.body.role;
 
-//     let sql = 'insert into registration set ?';
-//     let cred = { email: email, password: password, role: role }
-//     db.query(sql, cred, (err, result) => {
-//         if (err) throw err;
-//         console.log(err);
-//         res.send('user registered successfully');
-//     });
+    // console.log(role, email, password);
 
-// });
+
+
+    // password hashing using bcrypt
+    bcrypt.hash(password, saltRounds, (err, hash) => {
+        if (err) {
+            console.log(err);
+        }
+
+        let sql = 'insert into registration set ?';
+        let cred = { email: email, password: hash, role: role }
+        db.query(sql, cred, (err, result) => {
+            if (err) throw err;
+            res.send(result);
+
+        });
+
+    });
+
+
+});
 
 
 //create a route for login 
 app.post('/login', (req, res) => {
+
     console.log('inside login');
     const email = req.body.email;
     const password = req.body.password;
@@ -82,22 +101,27 @@ app.post('/login', (req, res) => {
 
     // console.log(role, email, password);
 
-    let sql = 'select * from registration where email=? and password=? and role=?';
-
-    db.query(sql, [email, password, role], (err, result) => {
+    let sql = 'select * from registration where email=? and role=?';
+    db.query(sql, [email, role], (err, result) => {
         if (err) {
             res.send({ err: err });
         }
-        // console.log(result);
+
         if (result.length > 0) {
-            // server side console
-            console.log(result);
-            // send the data to frontend  .. result is an array of object
-            res.send(result);
+            // console.log(result);
+            //now compare the passwords 
+            bcrypt.compare(password, result[0].password, (error, response) => {
+                if (response) {
+                    res.send(result);
+                }
+                else {
+                    res.send({ message: 'Wrong email/password combination' })
+                }
+            });
         }
         else {
-            console.log("wrong credentials");
-            res.send({ message: "wrong credentials" });
+            console.log("user doesn't exist");
+            res.send({ message: "user doesn't exist" });
         }
     });
 

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import Axios from 'axios';
 import './App.css';
 
+import Navbar from './Navbar';
+
 const Login = () => {
 
     const [email, setEmail] = useState("");
@@ -24,7 +26,7 @@ const Login = () => {
 
     //arrow function to save the role
     let saveRole = (event) => {
-        event.preventDefault();
+
         setRole(event.target.value);
         // alert(role);
     };
@@ -32,6 +34,11 @@ const Login = () => {
 
     let login = () => {
 
+        // client side validation
+        if (email === '' || password === '' || role === '') {
+            alert('Please fill all the fields');
+            return;
+        }
         // alert(email); // alert(password);// alert(role);
 
         // send the data to the backend 
@@ -46,36 +53,40 @@ const Login = () => {
             }
             else {
                 setLoginStatus(response.data[0].email);
+
             }
         }).catch(err => console.log(err));
 
     };
 
     return (
-        <div className="container text-center">
-            <form>
-                <div className="form-group mt-5">
+        <>
+            <Navbar />
 
-                    <input type="email" className="form-control" autoComplete="off" onChange={saveEmail} placeholder="Enter email" required />
+            <div className="container text-center">
+                <form>
+                    <div className="form-group mt-5">
 
-                </div>
-                <div className="form-group mt-2">
+                        <input type="email" className="form-control" onChange={saveEmail} placeholder="Enter email" required />
 
-                    <input type="password" className="form-control" autoComplete="off" onChange={savePassword} placeholder="Password" required />
-                </div>
+                    </div>
+                    <div className="form-group mt-2">
 
-                <select className="form-select mt-2" autoComplete="off" onChange={saveRole} required>
-                    <option>Role</option>
-                    <option value="student">Student</option>
-                    <option value="librarian">Librarian</option>
-                    <option value="admin">Admin</option>
-                </select>
-                {/* if we put type = submit then page is auto reloaded */}
-                <button type="button" className="btn btn-primary mt-2" onClick={login}>Submit</button>
-                <h1>{loginStatus}</h1>
-            </form>
-        </div>
+                        <input type="password" className="form-control" onChange={savePassword} placeholder="Password" required />
+                    </div>
 
+                    <select className="form-select mt-2" onChange={saveRole} required>
+                        <option>Role</option>
+                        <option value="student">Student</option>
+                        <option value="librarian">Librarian</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                    {/* if we put type = submit then page is auto reloaded */}
+                    <button type="button" className="btn btn-primary mt-2" onClick={login}>Login</button>
+                    <h1>{loginStatus}</h1>
+                </form>
+            </div>
+        </>
     )
 
 }
